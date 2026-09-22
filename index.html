@@ -1,0 +1,385 @@
+<!DOCTYPE HTML>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Officina</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; }
+    .hidden { display: none !important; }
+    #app-section { max-width: 800px; margin: 0 auto; }
+
+    .officina-container {
+      background: #15181A;
+      color: #A1D199;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #2A2E33;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .officina-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #2A2E33;
+      background: #1c2023;
+    }
+
+    .officina-header h3 { font-size: 16px; margin: 0; color: #fff; }
+    .officina-btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid #2A2E33;
+      background: #252A2E;
+      color: #A1D199;
+      padding: 6px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      width: auto;
+      margin-top: 0;
+    }
+
+    .officina-main { display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+    .officina-pane { display: flex; flex-direction: column; }
+    .preview-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+
+    .editor-wrap {
+      display: flex;
+      position: relative;
+      background: #101214;
+      border: 1px solid #2A2E33;
+      border-radius: 6px;
+      height: 300px;
+      overflow: hidden;
+    }
+
+    .line-numbers {
+      width: 50px;
+      padding: 10px 5px;
+      background: #1C2023;
+      color: #566058;
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: right;
+      user-select: none;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-right: 1px solid #2A2E33;
+    }
+
+    textarea#code {
+      flex: 1;
+      height: 100%;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: #E8EAE4;
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      box-sizing: border-box;
+      white-space: pre;
+      overflow: auto;
+      resize: none;
+      outline: none;
+    }
+
+    iframe#preview {
+      width: 100%;
+      height: 250px;
+      background: #fff;
+      border: 1px solid #2A2E33;
+      border-radius: 6px;
+    }
+
+    .editor-wrap.fullscreen,
+    iframe#preview.fullscreen {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 99999 !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding-top: 50px !important;
+      box-sizing: border-box !important;
+    }
+
+    .esc-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 100000;
+      background: #ff4d4d;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 5px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Stili per la sezione Salvataggio Progetti */
+    .save-section {
+      background: #15181A;
+      border: 1px solid #2A2E33;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 15px;
+    }
+
+    .save-section h4 {
+      margin: 0 0 10px 0;
+      color: #fff;
+      font-size: 15px;
+    }
+
+    .save-input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .save-input-group input {
+      flex: 1;
+      background: #101214;
+      border: 1px solid #2A2E33;
+      color: #fff;
+      padding: 8px;
+      border-radius: 6px;
+      outline: none;
+      font-size: 13px;
+    }
+
+    .btn-save {
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+    }
+
+    .project-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .project-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1c2023;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #2A2E33;
+    }
+
+    .project-item span {
+      font-size: 13px;
+      color: #A1D199;
+    }
+
+    .project-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-delete {
+      background: #c62828;
+      color: #fff;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app-section">
+    <div id="my-custom-app">
+      <div class="officina-container">
+        <div class="officina-header">
+          <h3>Officina</h3>
+          <div>
+            <button class="officina-btn" id="clearBtn">Pulisci</button>
+            <button class="officina-btn" id="runBtn">Esegui ▶</button>
+          </div>
+        </div>
+
+        <div class="officina-main">
+          <div class="officina-pane">
+            <div class="preview-bar">
+              <span class="officina-pane-label">Codice (html / css / js)</span>
+              <button class="officina-btn" id="expandEditorBtn">Ingrandisci editor ⤢</button>
+            </div>
+            <div class="editor-wrap" id="editorWrapper">
+              <div class="line-numbers" id="lineNumbers">1</div>
+              <textarea id="code" spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <div class="officina-pane">
+            <div class="preview-bar">
+              <span class="officina-pane-label">anteprima</span>
+              <button class="officina-btn" id="expandBtn">Ingrandisci ⤢</button>
+            </div>
+            <iframe id="preview"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sezione Salvataggio Progetti -->
+      <div class="save-section">
+        <h4>I Miei Progetti Salvati</h4>
+        <div class="save-input-group">
+          <input type="text" id="projectNameInput" placeholder="Nome del progetto...">
+          <button class="officina-btn btn-save" id="saveProjectBtn">📁 Salva Progetto</button>
+        </div>
+        <div id="projectList" class="project-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <button id="exitFullscreenBtn" class="esc-btn hidden">Esci ✕</button>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const codeEl = document.getElementById('code');
+      const lineNumbersEl = document.getElementById('lineNumbers');
+      const editorWrapper = document.getElementById('editorWrapper');
+      const preview = document.getElementById('preview');
+      const runBtn = document.getElementById('runBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const expandBtn = document.getElementById('expandBtn');
+      const expandEditorBtn = document.getElementById('expandEditorBtn');
+      const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+
+      const projectNameInput = document.getElementById('projectNameInput');
+      const saveProjectBtn = document.getElementById('saveProjectBtn');
+      const projectList = document.getElementById('projectList');
+
+      const initialCode = '<!DOCTYPE html>\n<html lang="it">\n<head>\n  <meta charset="UTF-8">\n  <title>Mia App</title>\n</head>\n<body>\n  <h1>Ciao Mondo!</h1>\n</body>\n</html>';
+      
+      codeEl.value = initialCode;
+
+      function updateLineNumbers() {
+        if (!codeEl || !lineNumbersEl) return;
+        const lines = codeEl.value.split('\n').length;
+        let numbers = '';
+        for (let i = 1; i <= lines; i++) {
+          numbers += i + '\n';
+        }
+        lineNumbersEl.innerText = numbers;
+      }
+
+      codeEl.addEventListener('input', updateLineNumbers);
+      codeEl.addEventListener('scroll', () => {
+        lineNumbersEl.scrollTop = codeEl.scrollTop;
+      });
+
+      if (expandBtn && preview) {
+        expandBtn.addEventListener('click', () => {
+          preview.classList.add('fullscreen');
+          exitFullscreenBtn.classList.remove('hidden');
+        });
+      }
+
+      if (expandEditorBtn && editorWrapper) {
+        expandEditorBtn.addEventListener('click', () => {
+          editorWrapper.classList.add('fullscreen');
+          exitFullscreenBtn.classList.remove('hidden');
+        });
+      }
+
+      if (exitFullscreenBtn) {
+        exitFullscreenBtn.addEventListener('click', () => {
+          preview.classList.remove('fullscreen');
+          editorWrapper.classList.remove('fullscreen');
+          exitFullscreenBtn.classList.add('hidden');
+        });
+      }
+
+      if (runBtn && preview && codeEl) {
+        runBtn.addEventListener('click', () => {
+          preview.srcdoc = codeEl.value;
+        });
+      }
+
+      if (clearBtn && codeEl && preview) {
+        clearBtn.addEventListener('click', () => {
+          codeEl.value = '';
+          preview.srcdoc = '';
+          updateLineNumbers();
+        });
+      }
+
+      // Gestione Progetti (Salvataggio / Caricamento / Eliminazione)
+      function renderProjects() {
+        projectList.innerHTML = '';
+        let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
+
+        for (let name in progetti) {
+          const item = document.createElement('div');
+          item.className = 'project-item';
+          item.innerHTML = `
+            <span>📁 ${name}</span>
+            <div class="project-actions">
+              <button class="officina-btn btn-load" data-name="${name}">Carica</button>
+              <button class="officina-btn btn-delete" data-name="${name}">Elimina</button>
+            </div>
+          `;
+          projectList.appendChild(item);
+        }
+
+        document.querySelectorAll('.btn-load').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const name = e.target.getAttribute('data-name');
+            let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
+            if (progetti[name] !== undefined) {
+              codeEl.value = progetti[name];
+              preview.srcdoc = codeEl.value;
+              updateLineNumbers();
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const name = e.target.getAttribute('data-name');
+            let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
+            delete progetti[name];
+            localStorage.setItem('miei_progetti_officina', JSON.stringify(progetti));
+            renderProjects();
+          });
+        });
+      }
+
+      if (saveProjectBtn) {
+        saveProjectBtn.addEventListener('click', () => {
+          const name = projectNameInput.value.trim();
+          if (!name) return;
+
+          let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
+          progetti[name] = codeEl.value;
+          localStorage.setItem('miei_progetti_officina', JSON.stringify(progetti));
+
+          projectNameInput.value = '';
+          renderProjects();
+        });
+      }
+
+      updateLineNumbers();
+      preview.srcdoc = codeEl.value;
+      renderProjects();
+    });
+  </script>
+</body>
+</html>
