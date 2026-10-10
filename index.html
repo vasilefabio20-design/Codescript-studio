@@ -3,254 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'">
   <title>Codescript Studio</title>
   <style>
     * { box-sizing: border-box; }
-    
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      background: #121212;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
+    html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow-x: hidden; background: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .hidden { display: none !important; }
-    
-    #app-section {
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 10px;
-    }
-
-    .officina-container {
-      background: #15181A;
-      color: #A1D199;
-      display: flex;
-      flex-direction: column;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid #2A2E33;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      position: relative;
-      width: 100%;
-    }
-
-    .officina-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      border-bottom: 1px solid #2A2E33;
-      background: #1c2023;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
+    #app-section { width: 100%; max-width: 900px; margin: 0 auto; padding: 10px; }
+    .officina-container { background: #15181A; color: #A1D199; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; border: 1px solid #2A2E33; margin: 10px 0; position: relative; width: 100%; }
+    .officina-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #2A2E33; background: #1c2023; flex-wrap: wrap; gap: 8px; }
     .officina-header h3 { font-size: 16px; margin: 0; color: #fff; }
-    
-    .officina-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .officina-btn {
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      border: 1px solid #2A2E33;
-      background: #252A2E;
-      color: #A1D199;
-      padding: 6px 12px;
-      border-radius: 7px;
-      cursor: pointer;
-    }
-
+    .officina-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .officina-btn { font-family: inherit; font-size: 13px; font-weight: 600; border: 1px solid #2A2E33; background: #252A2E; color: #A1D199; padding: 6px 12px; border-radius: 7px; cursor: pointer; }
     .officina-main { display: flex; flex-direction: column; gap: 10px; padding: 10px; width: 100%; }
     .officina-pane { display: flex; flex-direction: column; width: 100%; }
     .preview-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 5px; }
     .officina-pane-label { font-size: 13px; color: #A1D199; font-weight: 600; }
 
-    .editor-wrap {
-      display: flex;
-      position: relative;
-      background: #101214;
-      border: 1px solid #2A2E33;
-      border-radius: 6px;
-      height: 320px;
-      overflow: hidden;
-      width: 100%;
-    }
+    .editor-wrap { display: flex; position: relative; background: #101214; border: 1px solid #2A2E33; border-radius: 6px; height: 320px; overflow: hidden; width: 100%; }
+    .line-numbers { width: 40px; padding: 10px 5px; background: #1C2023; color: #566058; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.5; text-align: right; user-select: none; overflow: hidden; border-right: 1px solid #2A2E33; flex-shrink: 0; white-space: pre; }
+    .code-container { position: relative; flex: 1; height: 100%; overflow: hidden; }
+    textarea#code, #highlight-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 10px; margin: 0; border: none; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.5; white-space: pre; overflow: auto; tab-size: 2; letter-spacing: 0; }
+    textarea#code { background: transparent; color: transparent; -webkit-text-fill-color: transparent; caret-color: #E8EAE4; resize: none; outline: none; z-index: 2; }
+    #highlight-layer { background: transparent; color: #E8EAE4; pointer-events: none; z-index: 1; }
 
-    .line-numbers {
-      width: 40px;
-      padding: 10px 5px;
-      background: #1C2023;
-      color: #566058;
-      font-family: monospace;
-      font-size: 13px;
-      line-height: 1.5;
-      text-align: right;
-      user-select: none;
-      overflow: hidden;
-      border-right: 1px solid #2A2E33;
-      flex-shrink: 0;
-    }
-
-    .code-container {
-      position: relative;
-      flex: 1;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    textarea#code, #highlight-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding: 10px;
-      margin: 0;
-      border: none;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 13px;
-      line-height: 1.5;
-      white-space: pre;
-      overflow: auto;
-      tab-size: 2;
-    }
-
-    textarea#code {
-      background: transparent;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
-      caret-color: #E8EAE4;
-      resize: none;
-      outline: none;
-      z-index: 2;
-    }
-
-    #highlight-layer {
-      background: transparent;
-      color: #E8EAE4;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .hl-keyword { color: #ff79c6; font-weight: bold; }
-    .hl-string { color: #f1fa8c; }
-    .hl-number { color: #bd93f9; }
+    /* Colori per tipo di codice */
     .hl-tag { color: #ff79c6; }
     .hl-attr { color: #50fa7b; }
+    .hl-string { color: #f1fa8c; }
+    .hl-number { color: #bd93f9; }
+    .hl-keyword { color: #ff9e64; }
+    .hl-func { color: #8be9fd; }
+    .hl-builtin { color: #7aa2f7; }
+    .hl-prop { color: #66d9ef; }
+    .hl-color { color: #ffb86c; }
+    .hl-at { color: #ff5555; }
+    .hl-sel { color: #f78c6c; }
+    .hl-comment { color: #6272a4; font-style: italic; }
 
-    .error-banner {
-      background: #2a1111;
-      border: 1px solid #c62828;
-      color: #ff8a8a;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      margin-top: 6px;
-      font-family: monospace;
-      display: none;
-    }
+    /* Barra suggerimenti */
+    .sugg { display: flex; gap: 6px; overflow-x: auto; padding: 6px 2px 2px; min-height: 38px; align-items: center; -webkit-overflow-scrolling: touch; }
+    .sugg .hint { font-size: 12px; color: #566058; white-space: nowrap; }
+    .chip { flex-shrink: 0; font-family: 'Courier New', monospace; font-size: 13px; background: #252A2E; color: #E8EAE4; border: 1px solid #3a4046; border-radius: 14px; padding: 5px 11px; cursor: pointer; }
+    .chip b { color: #50fa7b; }
+    .sugg.fs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 100001; background: #1c2023; padding: 8px; border-top: 1px solid #2A2E33; }
 
-    iframe#preview {
-      width: 100%;
-      height: 280px;
-      background: #ffffff;
-      border: 1px solid #2A2E33;
-      border-radius: 6px;
-    }
+    .error-banner { background: #2a1111; border: 1px solid #c62828; color: #ff8a8a; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 6px; font-family: monospace; display: none; }
+    iframe#preview { width: 100%; height: 280px; background: #ffffff; border: 1px solid #2A2E33; border-radius: 6px; }
+    .editor-wrap.fullscreen, iframe#preview.fullscreen { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 99999 !important; border: none !important; border-radius: 0 !important; padding-top: 50px !important; }
+    .editor-wrap.fullscreen { height: calc(100vh - 50px) !important; }
+    .esc-btn { position: fixed; top: 10px; right: 10px; z-index: 100000; background: #ff4d4d; color: white; padding: 8px 16px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
 
-    .editor-wrap.fullscreen,
-    iframe#preview.fullscreen {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 99999 !important;
-      border: none !important;
-      border-radius: 0 !important;
-      padding-top: 50px !important;
-    }
-
-    .esc-btn {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 100000;
-      background: #ff4d4d;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 5px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .save-section {
-      background: #15181A;
-      border: 1px solid #2A2E33;
-      border-radius: 8px;
-      padding: 12px;
-      margin-top: 10px;
-      width: 100%;
-    }
-
-    .save-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
+    .save-section { background: #15181A; border: 1px solid #2A2E33; border-radius: 8px; padding: 12px; margin-top: 10px; width: 100%; }
+    .save-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
     .save-section h4 { margin: 0; color: #fff; font-size: 15px; }
     .save-input-group { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-
-    .save-input-group input {
-      flex: 1;
-      min-width: 150px;
-      background: #101214;
-      border: 1px solid #2A2E33;
-      color: #fff;
-      padding: 8px;
-      border-radius: 6px;
-      outline: none;
-      font-size: 13px;
-    }
-
+    .save-input-group input { flex: 1; min-width: 150px; background: #101214; border: 1px solid #2A2E33; color: #fff; padding: 8px; border-radius: 6px; outline: none; font-size: 13px; }
     .btn-save { background: #2e7d32; color: #fff; border: none; }
     .btn-delete-all { background: #c62828; color: #fff; border: none; }
     .btn-export { background: #0277bd; color: #fff; border: none; }
     .btn-import { background: #ef6c00; color: #fff; border: none; cursor: pointer; display: inline-block; padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 600; text-align: center; }
-    
     .project-list { display: flex; flex-direction: column; gap: 6px; }
-
-    .project-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #1c2023;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid #2A2E33;
-      word-break: break-all;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
+    .project-item { display: flex; justify-content: space-between; align-items: center; background: #1c2023; padding: 8px 10px; border-radius: 6px; border: 1px solid #2A2E33; word-break: break-all; flex-wrap: wrap; gap: 6px; }
     .project-item span { font-size: 13px; color: #A1D199; }
     .project-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .btn-delete { background: #c62828; color: #fff; border: none; }
@@ -270,7 +85,6 @@
         </div>
 
         <div class="officina-main">
-          <!-- Editor Pane -->
           <div class="officina-pane">
             <div class="preview-bar">
               <span class="officina-pane-label">Codice (HTML / CSS / JS)</span>
@@ -280,24 +94,23 @@
               <div class="line-numbers" id="lineNumbers">1</div>
               <div class="code-container">
                 <pre id="highlight-layer"></pre>
-                <textarea id="code" spellcheck="false"></textarea>
+                <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
               </div>
             </div>
+            <div id="sugg" class="sugg"></div>
             <div id="errorBanner" class="error-banner"></div>
           </div>
 
-          <!-- Anteprima Live -->
           <div class="officina-pane">
             <div class="preview-bar">
               <span class="officina-pane-label">Anteprima Live</span>
               <button type="button" class="officina-btn" id="expandBtn">Ingrandisci ⤢</button>
             </div>
-            <iframe id="preview"></iframe>
+            <iframe id="preview" sandbox="allow-scripts allow-modals allow-forms allow-popups allow-pointer-lock" referrerpolicy="no-referrer"></iframe>
           </div>
         </div>
       </div>
 
-      <!-- Salvataggio Progetti -->
       <div class="save-section">
         <div class="save-header">
           <h4>I Miei Progetti Salvati</h4>
@@ -333,6 +146,7 @@
       const expandBtn = document.getElementById('expandBtn');
       const expandEditorBtn = document.getElementById('expandEditorBtn');
       const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+      const suggEl = document.getElementById('sugg');
 
       const projectNameInput = document.getElementById('projectNameInput');
       const saveProjectBtn = document.getElementById('saveProjectBtn');
@@ -348,40 +162,164 @@
 <head>
   <meta charset="UTF-8">
   <title>Mia App</title>
+  <style>
+    h1 { color: tomato; font-size: 32px; }
+  </style>
 </head>
 <body style="color:#000; font-family:sans-serif;">
   <h1>Ciao Mondo!</h1>
+  <script>
+    // un commento
+    console.log("Ciao", 42);
+  <\/script>
 </body>
 </html>`;
 
       codeEl.value = defaultTemplate;
 
-      function updateLineNumbers() {
-        if (!codeEl || !lineNumbersEl) return;
-        const lines = codeEl.value.split('\n').length;
-        let numbers = '';
-        for (let i = 1; i <= lines; i++) {
-          numbers += i + '\n';
+      /* ================= COLORI ================= */
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const sp = (c, s) => `<span class="hl-${c}">${esc(s)}</span>`;
+
+      function tok(s, re, fn) {
+        let out = '', last = 0, m;
+        re.lastIndex = 0;
+        while ((m = re.exec(s))) {
+          if (m[0] === '') { re.lastIndex++; continue; }
+          out += esc(s.slice(last, m.index)) + fn(m);
+          last = m.index + m[0].length;
         }
-        lineNumbersEl.innerText = numbers;
+        return out + esc(s.slice(last));
+      }
+
+      const JS_RE = /(\/\/[^\n]*|\/\*[\s\S]*?(?:\*\/|$))|("(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|`(?:\\.|[^`\\])*`?)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|class|extends|try|catch|finally|throw|async|await|import|export|default|true|false|null|undefined|this|typeof|in|of)\b)|(\b(?:document|window|console|Math|JSON|localStorage|Array|Object|String|Number|Date)\b)|(\b[a-zA-Z_$][\w$]*(?=\())/g;
+      function hlJS(s) {
+        return tok(s, JS_RE, m => m[1] ? sp('comment', m[0]) : m[2] ? sp('string', m[0]) : m[3] ? sp('number', m[0]) : m[4] ? sp('keyword', m[0]) : m[5] ? sp('builtin', m[0]) : sp('func', m[0]));
+      }
+
+      const CSS_RE = /(\/\*[\s\S]*?(?:\*\/|$))|("[^"\n]*"?|'[^'\n]*'?)|(#[0-9a-fA-F]{3,8}\b)|(-?\b\d+\.?\d*(?:px|em|rem|%|vh|vw|s|ms|deg)?)|([a-zA-Z-]+)(?=\s*:)|(@[\w-]+)|([.#][a-zA-Z_][\w-]*)/g;
+      function hlCSS(s) {
+        return tok(s, CSS_RE, m => m[1] ? sp('comment', m[0]) : m[2] ? sp('string', m[0]) : m[3] ? sp('color', m[0]) : m[4] ? sp('number', m[0]) : m[5] ? sp('prop', m[0]) : m[6] ? sp('at', m[0]) : sp('sel', m[0]));
+      }
+
+      function hlTag(t) {
+        const m = /^(<\/?)([\w-]*)([\s\S]*?)(\/?>?)$/.exec(t);
+        if (!m) return esc(t);
+        return sp('tag', m[1] + m[2]) +
+          tok(m[3], /([\w:@-]+)(?:(=)("[^"]*"?|'[^']*'?)?)?/g, a => sp('attr', a[1]) + (a[2] ? '=' + (a[3] ? sp('string', a[3]) : '') : '')) +
+          sp('tag', m[4]);
+      }
+
+      const HTML_RE = /(<!--[\s\S]*?(?:-->|$)|<!DOCTYPE[^>]*>?)|(<(style|script)\b[^>]*>)([\s\S]*?)(<\/\3\s*>|$)|(<\/?[a-zA-Z][^>]*>?)/gi;
+      function hlHTML(s) {
+        return tok(s, HTML_RE, m => m[1] ? sp('comment', m[0])
+          : m[2] ? hlTag(m[2]) + (m[3].toLowerCase() === 'style' ? hlCSS(m[4]) : hlJS(m[4])) + (m[5] ? hlTag(m[5]) : '')
+          : hlTag(m[6]));
       }
 
       function applySyntaxHighlighting() {
-        let text = codeEl.value;
-        text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        text = text.replace(/(&lt;\/?[a-zA-Z0-9]+)(\s*.*?&gt;)?/g, function(match, tag, attr) {
-          let res = `<span class="hl-tag">${tag}</span>`;
-          if (attr) res += attr.replace(/([a-zA-Z-]+)=("[^"]*")/g, '<span class="hl-attr">$1</span>=<span class="hl-string">$2</span>');
-          return res;
+        highlightLayer.innerHTML = hlHTML(codeEl.value) + '\n';
+      }
+
+      function updateLineNumbers() {
+        const lines = codeEl.value.split('\n').length;
+        let numbers = '';
+        for (let i = 1; i <= lines; i++) numbers += i + '\n';
+        lineNumbersEl.textContent = numbers;
+      }
+
+      /* ================= SUGGERIMENTI ================= */
+      const TAGS = 'a abbr audio b body br button canvas div footer form h1 h2 h3 h4 h5 h6 head header hr html i iframe img input label li link main meta nav ol option p script section select span strong style svg table td textarea th title tr ul video'.split(' ');
+      const VOID = ['br', 'hr', 'img', 'input', 'meta', 'link'];
+      const ATTRS = 'class id style src href alt type value placeholder name width height onclick oninput onchange onload target rel lang charset content disabled checked min max step title for action method autofocus controls loop'.split(' ');
+      const CSSP = 'align-items animation background background-color background-image border border-radius bottom box-shadow box-sizing color cursor display flex flex-direction flex-wrap font-family font-size font-weight gap grid grid-template-columns height justify-content left letter-spacing line-height margin margin-bottom margin-left margin-right margin-top max-height max-width min-height min-width object-fit opacity overflow padding padding-bottom padding-left padding-right padding-top position right text-align text-decoration text-shadow top transform transition user-select white-space width z-index'.split(' ');
+      const JSL = ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'switch', 'case', 'break', 'continue', 'new', 'class', 'try', 'catch', 'throw', 'async', 'await', 'true', 'false', 'null', 'undefined', 'this', 'typeof',
+        "document.getElementById('|')", "document.querySelector('|')", "document.createElement('|')", 'console.log(|)', "addEventListener('|', () => {\n  \n})",
+        'setTimeout(() => {\n  \n}, 1000)', 'setInterval(() => {\n  \n}, 1000)', 'requestAnimationFrame(|)', 'Math.random()', 'Math.floor(|)', 'alert(|)',
+        'JSON.stringify(|)', 'JSON.parse(|)', "localStorage.getItem('|')", "localStorage.setItem('|', |)", "classList.add('|')", 'innerHTML', 'textContent', 'style', 'window', 'document'];
+
+      let current = null; // { items, ctx }
+
+      function blockAfter(before, name) {
+        const low = before.toLowerCase();
+        const o = low.lastIndexOf('<' + name), c = low.lastIndexOf('</' + name);
+        if (o <= c) return null;
+        const gt = before.indexOf('>', o);
+        return gt === -1 ? null : before.slice(gt + 1);
+      }
+
+      function computeSuggestions() {
+        if (codeEl.selectionStart !== codeEl.selectionEnd) return null;
+        const v = codeEl.value, c = codeEl.selectionStart, before = v.slice(0, c);
+        const w = /[\w$.-]*$/.exec(before)[0];
+        const ws = c - w.length;
+        let list, eatLt = false;
+        const afterLt = before[ws - 1] === '<';
+        const css = blockAfter(before, 'style'), js = blockAfter(before, 'script');
+
+        if (css !== null) {
+          const inside = css.split('{').length > css.split('}').length;
+          list = inside ? CSSP.map(p => ({ label: p, tpl: p + ': |;' })) : TAGS.map(t => ({ label: t, tpl: t }));
+        } else if (js !== null) {
+          list = JSL.map(e => ({ label: e.replace(/\n[\s\S]*/, '').replace('|', ''), tpl: e }));
+        } else {
+          const inTag = before.lastIndexOf('<') > before.lastIndexOf('>');
+          if (inTag && !afterLt) {
+            if (before.slice(ws - 2, ws) === '</') return null;
+            list = ATTRS.map(a => ({ label: a, tpl: a + '="|"' }));
+          } else {
+            eatLt = afterLt;
+            list = TAGS.map(t => ({ label: t, tpl: VOID.includes(t) ? `<${t} |>` : `<${t}>|</${t}>` }));
+          }
+        }
+        if (!w && !(afterLt && css === null && js === null)) return null;
+        const lw = w.toLowerCase();
+        const items = list.filter(i => i.label.toLowerCase().startsWith(lw) && i.label !== w).slice(0, 14);
+        return { items, ctx: { start: eatLt ? ws - 1 : ws, end: c }, w };
+      }
+
+      function applySuggestion(item) {
+        if (!current) return;
+        const { start, end } = current.ctx;
+        const pos = item.tpl.indexOf('|');
+        const text = item.tpl.replace('|', '');
+        const v = codeEl.value;
+        codeEl.value = v.slice(0, start) + text + v.slice(end);
+        const caret = start + (pos < 0 ? text.length : pos);
+        codeEl.focus();
+        codeEl.setSelectionRange(caret, caret);
+        onEdit();
+      }
+
+      function showSuggestions() {
+        current = computeSuggestions();
+        suggEl.innerHTML = '';
+        if (!current || !current.items.length) {
+          current = null;
+          const h = document.createElement('span');
+          h.className = 'hint';
+          h.textContent = 'I suggerimenti compaiono mentre scrivi (es. "h")…';
+          suggEl.appendChild(h);
+          return;
+        }
+        const n = current.w.length;
+        current.items.forEach(item => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'chip';
+          const b1 = document.createElement('b');
+          b1.textContent = item.label.slice(0, n);
+          b.appendChild(b1);
+          b.appendChild(document.createTextNode(item.label.slice(n)));
+          b.addEventListener('mousedown', e => e.preventDefault());
+          b.addEventListener('click', e => { e.preventDefault(); applySuggestion(item); });
+          suggEl.appendChild(b);
         });
-        highlightLayer.innerHTML = text + '\n';
+        suggEl.scrollLeft = 0;
       }
 
-      function clearErrors() {
-        errorBanner.style.display = 'none';
-        errorBanner.innerText = '';
-      }
-
+      /* ================= ERRORI / ESECUZIONE ================= */
+      function clearErrors() { errorBanner.style.display = 'none'; errorBanner.innerText = ''; }
       function showError(lineNum, msg) {
         errorBanner.style.display = 'block';
         errorBanner.innerText = `⚠️ Errore (Riga ${lineNum || '?'}) : ${msg}`;
@@ -390,36 +328,32 @@
       function executeCode() {
         clearErrors();
         const code = codeEl.value;
-
         const errorCatcherScript = `
           <script>
             window.addEventListener('error', function(e) {
-              window.parent.postMessage({
-                type: 'CODE_ERROR',
-                message: e.message,
-                lineno: e.lineno
-              }, '*');
+              window.parent.postMessage({ type: 'CODE_ERROR', message: e.message, lineno: e.lineno }, '*');
             });
           <\/script>
         `;
-
         let injectedCode = code;
-        if (code.includes('<head>')) {
-          injectedCode = code.replace('<head>', `<head>${errorCatcherScript}`);
-        } else {
-          injectedCode = errorCatcherScript + code;
-        }
-
+        if (code.includes('<head>')) injectedCode = code.replace('<head>', `<head>${errorCatcherScript}`);
+        else injectedCode = errorCatcherScript + code;
         preview.srcdoc = injectedCode;
       }
 
-      // Controllo di sicurezza sull'origine del messaggio postMessage
       window.addEventListener('message', (e) => {
-        // Verifica che il messaggio provenga in sicurezza dall'iframe interno (srcdoc usa origin 'null' o la stessa origine)
-        if (e.data && e.data.type === 'CODE_ERROR') {
-          showError(e.data.lineno, e.data.message);
-        }
+        if (e.source !== preview.contentWindow) return; // ignora tutto ciò che non viene dall'anteprima
+        const d = e.data;
+        if (d && d.type === 'CODE_ERROR') showError(Number(d.lineno) || '?', String(d.message).slice(0, 300));
       });
+
+      function onEdit() {
+        updateLineNumbers();
+        applySyntaxHighlighting();
+        showSuggestions();
+        clearTimeout(bufferTimer);
+        bufferTimer = setTimeout(executeCode, 400);
+      }
 
       codeEl.addEventListener('scroll', () => {
         highlightLayer.scrollTop = codeEl.scrollTop;
@@ -427,65 +361,77 @@
         lineNumbersEl.scrollTop = codeEl.scrollTop;
       });
 
-      codeEl.addEventListener('input', () => {
+      codeEl.addEventListener('input', onEdit);
+      codeEl.addEventListener('click', showSuggestions);
+      codeEl.addEventListener('keyup', (e) => {
+        if (e.key.startsWith('Arrow') || e.key === 'Home' || e.key === 'End') showSuggestions();
+      });
+
+      // Tab: accetta il primo suggerimento, altrimenti inserisce 2 spazi
+      codeEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          if (current && current.items.length) { applySuggestion(current.items[0]); return; }
+          const s = codeEl.selectionStart, en = codeEl.selectionEnd;
+          codeEl.value = codeEl.value.slice(0, s) + '  ' + codeEl.value.slice(en);
+          codeEl.setSelectionRange(s + 2, s + 2);
+          onEdit();
+        }
+      });
+
+      runBtn.addEventListener('click', (e) => { e.preventDefault(); executeCode(); });
+
+      expandBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        preview.classList.add('fullscreen');
+        exitFullscreenBtn.classList.remove('hidden');
+      });
+
+      expandEditorBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        editorWrapper.classList.add('fullscreen');
+        suggEl.classList.add('fs');
+        exitFullscreenBtn.classList.remove('hidden');
+      });
+
+      exitFullscreenBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        preview.classList.remove('fullscreen');
+        editorWrapper.classList.remove('fullscreen');
+        suggEl.classList.remove('fs');
+        exitFullscreenBtn.classList.add('hidden');
+      });
+
+      clearBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        codeEl.value = '';
+        preview.srcdoc = '';
+        clearErrors();
         updateLineNumbers();
         applySyntaxHighlighting();
-
-        clearTimeout(bufferTimer);
-        bufferTimer = setTimeout(() => {
-          executeCode();
-        }, 400);
+        showSuggestions();
       });
 
-      runBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        executeCode();
-      });
-
-      if (expandBtn && preview) {
-        expandBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          preview.classList.add('fullscreen');
-          exitFullscreenBtn.classList.remove('hidden');
-        });
-      }
-
-      if (expandEditorBtn && editorWrapper) {
-        expandEditorBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          editorWrapper.classList.add('fullscreen');
-          exitFullscreenBtn.classList.remove('hidden');
-        });
-      }
-
-      if (exitFullscreenBtn) {
-        exitFullscreenBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          preview.classList.remove('fullscreen');
-          editorWrapper.classList.remove('fullscreen');
-          exitFullscreenBtn.classList.add('hidden');
-        });
-      }
-
-      if (clearBtn && codeEl && preview) {
-        clearBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          codeEl.value = '';
-          preview.srcdoc = '';
-          clearErrors();
-          updateLineNumbers();
-          applySyntaxHighlighting();
-        });
+      /* ================= PROGETTI ================= */
+      function getProjects() {
+        const out = Object.create(null);
+        try {
+          const raw = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
+          if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+            for (const k of Object.keys(raw)) if (k !== '__proto__' && typeof raw[k] === 'string') out[k] = raw[k];
+          }
+        } catch (e) {}
+        return out;
       }
 
       function renderProjects() {
         projectList.innerHTML = '';
-        let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
+        let progetti = getProjects();
 
         for (let name in progetti) {
           const item = document.createElement('div');
           item.className = 'project-item';
-          
+
           const nameSpan = document.createElement('span');
           nameSpan.textContent = `📁 ${name}`;
 
@@ -506,10 +452,8 @@
 
           actionsDiv.appendChild(loadBtn);
           actionsDiv.appendChild(deleteBtn);
-          
           item.appendChild(nameSpan);
           item.appendChild(actionsDiv);
-
           projectList.appendChild(item);
         }
 
@@ -517,12 +461,13 @@
           btn.addEventListener('click', (e) => {
             e.preventDefault();
             const name = e.target.getAttribute('data-name');
-            let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
+            let progetti = getProjects();
             if (progetti[name] !== undefined) {
               codeEl.value = progetti[name];
               executeCode();
               updateLineNumbers();
               applySyntaxHighlighting();
+              showSuggestions();
             }
           });
         });
@@ -531,7 +476,7 @@
           btn.addEventListener('click', (e) => {
             e.preventDefault();
             const name = e.target.getAttribute('data-name');
-            let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
+            let progetti = getProjects();
             delete progetti[name];
             localStorage.setItem('miei_progetti_officina', JSON.stringify(progetti));
             renderProjects();
@@ -539,74 +484,65 @@
         });
       }
 
-      if (saveProjectBtn) {
-        saveProjectBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          const name = projectNameInput.value.trim();
-          if (!name) return;
+      saveProjectBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const name = projectNameInput.value.trim();
+        if (!name) return;
+        let progetti = getProjects();
+        progetti[name] = codeEl.value;
+        localStorage.setItem('miei_progetti_officina', JSON.stringify(progetti));
+        projectNameInput.value = '';
+        renderProjects();
+      });
 
-          let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
-          progetti[name] = codeEl.value;
-          localStorage.setItem('miei_progetti_officina', JSON.stringify(progetti));
+      exportProjectsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        let progettiData = localStorage.getItem('miei_progetti_officina') || '{}';
+        let blob = new Blob([progettiData], { type: 'application/json' });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = 'miei_progetti_codescript.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
 
-          projectNameInput.value = '';
-          renderProjects();
-        });
-      }
-
-      // Funzione per Esportare i progetti in un file JSON (salvato nella cartella Download del telefono)
-      if (exportProjectsBtn) {
-        exportProjectsBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          let progettiData = localStorage.getItem('miei_progetti_officina') || '{}';
-          let blob = new Blob([progettiData], { type: 'application/json' });
-          let url = URL.createObjectURL(blob);
-          let a = document.createElement('a');
-          a.href = url;
-          a.download = 'miei_progetti_codescript.json';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        });
-      }
-
-      // Funzione per Importare i progetti da un file JSON
-      if (importFileBtn) {
-        importFileBtn.addEventListener('change', (e) => {
-          let file = e.target.files[0];
-          if (!file) return;
-          let reader = new FileReader();
-          reader.onload = function(evt) {
-            try {
-              let importedData = JSON.parse(evt.target.result);
-              let progetti = JSON.parse(localStorage.getItem('miei_progetti_officina') || '{}');
-              // Unisce i progetti importati con quelli esistenti
-              let merged = Object.assign({}, progetti, importedData);
-              localStorage.setItem('miei_progetti_officina', JSON.stringify(merged));
-              renderProjects();
-              alert("Progetti importati con successo!");
-            } catch (err) {
-              alert("Errore durante l'importazione del file JSON.");
+      importFileBtn.addEventListener('change', (e) => {
+        let file = e.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            let importedData = JSON.parse(evt.target.result);
+            if (!importedData || typeof importedData !== 'object' || Array.isArray(importedData)) throw new Error('formato');
+            let merged = getProjects();
+            for (const k of Object.keys(importedData)) {
+              if (k !== '__proto__' && k.length <= 100 && typeof importedData[k] === 'string') merged[k] = importedData[k];
             }
-          };
-          reader.readAsText(file);
-          importFileBtn.value = ''; // Reset input
-        });
-      }
-
-      if (deleteAllProjectsBtn) {
-        deleteAllProjectsBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          if (confirm("Sei sicuro di voler eliminare TUTTI i progetti salvati?")) {
-            localStorage.removeItem('miei_progetti_officina');
+            localStorage.setItem('miei_progetti_officina', JSON.stringify(merged));
             renderProjects();
+            alert("Progetti importati con successo!");
+          } catch (err) {
+            alert("Errore durante l'importazione del file JSON.");
           }
-        });
-      }
+        };
+        reader.readAsText(file);
+        importFileBtn.value = '';
+      });
+
+      deleteAllProjectsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (confirm("Sei sicuro di voler eliminare TUTTI i progetti salvati?")) {
+          localStorage.removeItem('miei_progetti_officina');
+          renderProjects();
+        }
+      });
 
       updateLineNumbers();
       applySyntaxHighlighting();
+      showSuggestions();
       executeCode();
       renderProjects();
     });
