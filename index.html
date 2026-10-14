@@ -22,7 +22,14 @@
     .officina-pane-label { font-size: 13px; color: #A1D199; font-weight: 600; }
 
     .editor-wrap { display: flex; position: relative; background: #101214; border: 1px solid #2A2E33; border-radius: 6px; height: 320px; overflow: hidden; width: 100%; }
-    .line-numbers { width: 40px; padding: 10px 5px; background: #1C2023; color: #566058; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.5; text-align: right; user-select: none; overflow: hidden; border-right: 1px solid #2A2E33; flex-shrink: 0; white-space: pre; }
+    
+    /* Gestione dei numeri di riga con i pallini */
+    .line-numbers { width: 55px; padding: 10px 4px; background: #1C2023; color: #566058; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.5; text-align: right; user-select: none; overflow: hidden; border-right: 1px solid #2A2E33; flex-shrink: 0; white-space: pre; }
+    .line-row { display: flex; justify-content: space-between; align-items: center; padding-right: 4px; }
+    .line-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; background: transparent; flex-shrink: 0; }
+    .line-dot.error { background: #ff5555; box-shadow: 0 0 4px #ff5555; }
+    .line-num-text { flex: 1; text-align: right; }
+
     .code-container { position: relative; flex: 1; height: 100%; overflow: hidden; }
     textarea#code, #highlight-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 10px; margin: 0; border: none; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.5; white-space: pre; overflow: auto; tab-size: 2; letter-spacing: 0; }
     textarea#code { background: transparent; color: transparent; -webkit-text-fill-color: transparent; caret-color: #E8EAE4; resize: none; outline: none; z-index: 2; }
@@ -49,7 +56,9 @@
     .chip b { color: #50fa7b; }
     .sugg.fs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 100001; background: #1c2023; padding: 8px; border-top: 1px solid #2A2E33; }
 
-    .error-banner { background: #2a1111; border: 1px solid #c62828; color: #ff8a8a; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 6px; font-family: monospace; display: none; }
+    /* Banner essenziale con solo l'avviso */
+    .error-banner { background: #2a1111; border: 1px solid #c62828; color: #ff8a8a; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-top: 6px; font-family: sans-serif; font-weight: 600; display: none; text-align: center; }
+
     iframe#preview { width: 100%; height: 280px; background: #ffffff; border: 1px solid #2A2E33; border-radius: 6px; }
     .editor-wrap.fullscreen, iframe#preview.fullscreen { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 99999 !important; border: none !important; border-radius: 0 !important; padding-top: 50px !important; }
     .editor-wrap.fullscreen { height: calc(100vh - 50px) !important; }
@@ -91,14 +100,14 @@
               <button type="button" class="officina-btn" id="expandEditorBtn">Ingrandisci editor ⤢</button>
             </div>
             <div class="editor-wrap" id="editorWrapper">
-              <div class="line-numbers" id="lineNumbers">1</div>
+              <div class="line-numbers" id="lineNumbers"></div>
               <div class="code-container">
                 <pre id="highlight-layer"></pre>
                 <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
               </div>
             </div>
             <div id="sugg" class="sugg"></div>
-            <div id="errorBanner" class="error-banner"></div>
+            <div id="errorBanner" class="error-banner">⚠️ Ci sono errori nel codice</div>
           </div>
 
           <div class="officina-pane">
@@ -156,6 +165,7 @@
       const projectList = document.getElementById('projectList');
 
       let bufferTimer = null;
+      let activeErrors = [];
 
       const defaultTemplate = `<!DOCTYPE html>
 <html lang="it">
@@ -210,7 +220,7 @@
           sp('tag', m[4]);
       }
 
-      const HTML_RE = /(<!--[\s\S]*?(?:-->|$)|<!DOCTYPE[^>]*>?)|(<(style|script)\b[^>]*>)([\s\S]*?)(<\/\3\s*>|$)|(<\/?[a-zA-Z][^>]*>?)/gi;
+      const HTML_RE = /(<!--[\s\S]*?(?:-->|$)\vert{}<!DOCTYPE[^>]*>?)\vert{}(<(style\vert{}script)\b[^>]*>)([\s\S]*?)(<\/\3\s*>\vert{}$)|(<\/?[a-zA-Z][^>]*>?)/gi;
       function hlHTML(s) {
         return tok(s, HTML_RE, m => m[1] ? sp('comment', m[0])
           : m[2] ? hlTag(m[2]) + (m[3].toLowerCase() === 'style' ? hlCSS(m[4]) : hlJS(m[4])) + (m[5] ? hlTag(m[5]) : '')
@@ -223,9 +233,15 @@
 
       function updateLineNumbers() {
         const lines = codeEl.value.split('\n').length;
-        let numbers = '';
-        for (let i = 1; i <= lines; i++) numbers += i + '\n';
-        lineNumbersEl.textContent = numbers;
+        const errorLineSet = new Set(activeErrors.map(e => e.line));
+        
+        let html = '';
+        for (let i = 1; i <= lines; i++) {
+          const hasError = errorLineSet.has(i);
+          const dotClass = hasError ? 'line-dot error' : 'line-dot';
+          html += `<div class="line-row"><span class="${dotClass}" title="${hasError ? 'Errore a questa riga' : ''}"></span><span class="line-num-text">${i}</span></div>`;
+        }
+        lineNumbersEl.innerHTML = html;
       }
 
       /* ================= SUGGERIMENTI ================= */
@@ -238,7 +254,7 @@
         'setTimeout(() => {\n  \n}, 1000)', 'setInterval(() => {\n  \n}, 1000)', 'requestAnimationFrame(|)', 'Math.random()', 'Math.floor(|)', 'alert(|)',
         'JSON.stringify(|)', 'JSON.parse(|)', "localStorage.getItem('|')", "localStorage.setItem('|', |)", "classList.add('|')", 'innerHTML', 'textContent', 'style', 'window', 'document'];
 
-      let current = null; // { items, ctx }
+      let current = null;
 
       function blockAfter(before, name) {
         const low = before.toLowerCase();
@@ -318,16 +334,54 @@
         suggEl.scrollLeft = 0;
       }
 
-      /* ================= ERRORI / ESECUZIONE ================= */
-      function clearErrors() { errorBanner.style.display = 'none'; errorBanner.innerText = ''; }
-      function showError(lineNum, msg) {
+      /* ================= GESTIONE ERRORI E PALLINI ================= */
+      function clearErrors() { 
+        activeErrors = [];
+        errorBanner.style.display = 'none'; 
+        updateLineNumbers();
+      }
+
+      function renderErrorStatus() {
+        updateLineNumbers();
+        if (activeErrors.length === 0) {
+          errorBanner.style.display = 'none';
+          return;
+        }
         errorBanner.style.display = 'block';
-        errorBanner.innerText = `⚠️ Errore (Riga ${lineNum || '?'}) : ${msg}`;
+      }
+
+      function checkStaticSyntax(fullCode) {
+        const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+        let match;
+        while ((match = scriptRegex.exec(fullCode)) !== null) {
+          const scriptContent = match[1];
+          const beforeScript = fullCode.slice(0, match.index);
+          const startLine = beforeScript.split('\n').length;
+
+          try {
+            new Function(scriptContent);
+          } catch (e) {
+            let errLine = startLine;
+            const matchLine = /anonymous:(\d+)/.exec(e.stack || '');
+            if (matchLine) {
+              errLine += Number(matchLine[1]) - 1;
+            }
+            const msg = e.message || 'Errore di sintassi';
+            const exists = activeErrors.some(err => err.line === errLine && err.message === msg);
+            if (!exists) {
+              activeErrors.push({ line: errLine, message: msg });
+            }
+          }
+        }
       }
 
       function executeCode() {
         clearErrors();
         const code = codeEl.value;
+        
+        checkStaticSyntax(code);
+        renderErrorStatus();
+
         const errorCatcherScript = `
           <script>
             window.addEventListener('error', function(e) {
@@ -342,9 +396,18 @@
       }
 
       window.addEventListener('message', (e) => {
-        if (e.source !== preview.contentWindow) return; // ignora tutto ciò che non viene dall'anteprima
+        if (e.source !== preview.contentWindow) return; 
         const d = e.data;
-        if (d && d.type === 'CODE_ERROR') showError(Number(d.lineno) || '?', String(d.message).slice(0, 300));
+        if (d && d.type === 'CODE_ERROR') {
+          const lineNum = Number(d.lineno) || '?';
+          const msg = String(d.message).slice(0, 300);
+          
+          const exists = activeErrors.some(err => err.line === lineNum && err.message === msg);
+          if (!exists) {
+            activeErrors.push({ line: lineNum, message: msg });
+            renderErrorStatus();
+          }
+        }
       });
 
       function onEdit() {
@@ -367,7 +430,6 @@
         if (e.key.startsWith('Arrow') || e.key === 'Home' || e.key === 'End') showSuggestions();
       });
 
-      // Tab: accetta il primo suggerimento, altrimenti inserisce 2 spazi
       codeEl.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
           e.preventDefault();
